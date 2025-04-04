@@ -45,33 +45,36 @@
     </div>
 
     <section class="confirmation-section">
-        <div class="success-icon">
-            <i class="fas fa-check"></i>
-        </div>
-        
-        <div class="confirmation-message">
-            <h2>Your order has been placed successfully!</h2>
-            <p id="order-details">Order #<span id="order-id"></span> | <span id="order-date"></span></p>
-        </div>
-        
-        <div class="order-details">
-            <div class="detail-box">
-                <h3>Shipping Details</h3>
-                <p>Your items will be delivered to:</p>
-                <p>12 G.T. Road, Delhi, India</p>
-                <p>Expected delivery: <span id="delivery-date"></span></p>
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
             </div>
-            <div class="detail-box">
-                <h3>Payment Information</h3>
-                <p>Payment Method: <span id="payment-method"></span></p>
-                <p>Total Amount: <span id="total-amount">Rs 00.00</span></p>
+            
+            <div class="confirmation-message">
+                <h2>Your order has been placed successfully!</h2>
+                <p id="order-details">Order #<span id="order-id"></span> | <span id="order-date"></span></p>
             </div>
-        </div>
-        
-        <div class="action-buttons">
+            
+            <div class="order-details">
+                <div class="detail-box">
+                    <h3>Shipping Details</h3>
+                    <p>Your items will be delivered to:</p>
+                    <p class="delivery-address">[Address Placeholder]</p>
+                    <p>Expected delivery: <span id="delivery-date"></span></p>
+                </div>
+                <div class="detail-box">
+                    <h3>Payment Information</h3>
+                    <p>Payment Method: <span id="payment-method"></span></p>
+                    <p>Total Amount: <span id="total-amount">Rs 00.00</span></p>
+                </div>
+            </div>
+        <!-- <div class="action-buttons">
             <a href="shop.html" class="btn primary-btn">Continue Shopping</a>
             <button class="btn secondary-btn" onclick="window.print()">Print Receipt</button>
-        </div>
+        </div> -->
+        <div class="action-buttons">
+            <a href="shop.html" class="btn primary-btn">Continue Shopping</a>
+            <button id="print-receipt" class="btn secondary-btn">Print Receipt</button>
+        </div>        
     </section>
 
     <footer>

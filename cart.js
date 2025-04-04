@@ -276,7 +276,58 @@ class ShoppingCart {
   const checkoutBtn = document.querySelector('.checkout-btn');
   checkoutBtn?.addEventListener('click', () => {
     cart.showNotification('Proceeding to checkout...');
-    setTimeout(() => {
-      window.location.href = 'checkout.html';
-    }, 1000);
+     setTimeout(() => {
+       window.location.href = 'checkout.html';
+     }, 1000);
   });
+  // Add this function at the end of cart.js
+
+  document.querySelector('.checkout-btn').addEventListener('click', async () => {
+    const userId = localStorage.getItem('user_id'); // Assume user ID is stored in local storage after login
+    if (!userId) {
+      alert('Please log in before proceeding to checkout.');
+      return;
+    }
+  
+    // Retrieve cart items from localStorage
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    const formattedItems = cartItems.map(item => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+    })); // Extract name, price, and quantity
+  
+    // Calculate total price using ShoppingCart's getTotal method
+    //const total = cart.getTotal(); // Assuming getTotal() calculates total price
+  
+    // Check if cart is empty
+    if (formattedItems.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+  
+    // console.log('Checkout Data:', { user_id: userId, items: formattedItems, total }); // Debugging log
+  
+    // try {
+    //   // Send cart data to the backend
+    //   const response = await fetch('/checkout', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ user_id: userId, items: formattedItems, total }),
+    //   });
+  
+    //   const result = await response.json();
+    //   if (response.ok) {
+    //     alert(result.message);
+    //     cart.clearCart(); // Clear cart after successful checkout
+    //     window.location.href = '/profile.html'; // Redirect to profile page
+    //   } else {
+    //     alert(result.error || 'Failed to place order.');
+    //   }
+    // } catch (error) {
+    //   console.error('Error during checkout:', error);
+    // }
+  });
+  
+  
+  

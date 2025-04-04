@@ -104,52 +104,71 @@ signupPassword.addEventListener('input', () => {
 const loginForm = document.getElementById('loginForm');
 const signupForm = document.getElementById('signupForm');
 
-loginForm.addEventListener('submit', (e) => {
+// Handle Signup Form Submission
+signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    // In a real application, this would send a request to the server for authentication
-    console.log('Login attempt:', { email, password });
-    
-    // Simulate successful login
-    showNotification('Login successful! Redirecting...');
-    
-    // Redirect to home page after a delay
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 1500);
-});
-
-signupForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
     const name = document.getElementById('signupName').value;
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
-    const confirmPassword = document.getElementById('signupConfirmPassword').value;
-    
-    // Check if passwords match
-    if (password !== confirmPassword) {
-        showNotification('Passwords do not match!', true);
-        return;
+  
+    try {
+      const response = await fetch('/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+        showNotification(result.message);
+        // Redirect to login tab after successful signup
+        document.querySelector('.auth-tab[data-tab="login"]').click();
+        document.getElementById('loginEmail').value = email; // Pre-fill login form with email
+      } else {
+        showNotification(result.error, true);
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
-    
-    // In a real application, this would send a request to the server to create an account
-    console.log('Signup attempt:', { name, email, password });
-    
-    // Simulate successful signup
-    showNotification('Account created successfully! Redirecting to login...');
-    
-    // Switch to login tab after a delay
-    setTimeout(() => {
-        authTabs.click();
-        
-        // Pre-fill login form with the email
-        document.getElementById('loginEmail').value = email;
-    }, 1500);
-});
+  });
+  
+  // Handle Login Form Submission
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+  
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+        // Store user data in localStorage
+        localStorage.setItem('user_name', result.name);
+        localStorage.setItem('user_email', result.email);
+        localStorage.setItem('user_id', result.user_id);
+  
+        showNotification(result.message);
+  
+        // Clear cart on successful login
+        localStorage.removeItem('cart');
+  
+        // Redirect to profile page after successful login
+        setTimeout(() => {
+          window.location.href = '/profile.html';
+        }, 1500);
+      } else {
+        showNotification(result.error, true);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  });
+  
 
 // Custom notification function
 function showNotification(message, isError = false) {

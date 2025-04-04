@@ -63,7 +63,7 @@ paymentMethods.forEach(method => {
         creditCardForm.style.display = 'none';
         upiForm.style.display = 'none';
         netbankingForm.style.display = 'none';
-        
+
         // Show the selected payment form
         if (value === 'credit-card') {
             creditCardForm.style.display = 'block';
@@ -144,7 +144,6 @@ promoCodeBtn.addEventListener('click', () => {
         showNotification('Please enter a promo code', true);
         return;
     }
-    
     // Check if promo code is valid
     if (promoCode.toLowerCase() === 'harvest20') {
         // Apply 20% discount
@@ -317,7 +316,7 @@ function updateOrderSummary(cartItems) {
     
     // Calculate total
     const total = subtotal + shipping + tax - discount;
-    
+    // localStorage.setItem('totalPrice', total);
     // Update the DOM
     document.querySelector('.subtotal span:last-child').textContent = `Rs ${subtotal.toFixed(2)}`;
     document.querySelector('.tax span:last-child').textContent = `Rs ${tax.toFixed(2)}`;
@@ -378,3 +377,112 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+document.querySelector('.place-order-btn').addEventListener('click', async () => {
+    const userId = localStorage.getItem('user_id'); // Assume user ID is stored in local storage after login
+    // if (!userId) {
+    //   alert('Please log in before proceeding to checkout.');
+    //   return;
+    // }
+    const selectedPayment = document.querySelector('input[name="payment"]:checked').value;
+
+    // Define which fields to validate based on payment method
+    let fieldsToValidate = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode', 'country'];
+
+    if (selectedPayment === 'credit-card') {
+        fieldsToValidate = [...fieldsToValidate, 'cardNumber', 'expiryDate', 'cvv', 'nameOnCard'];
+    } else if (selectedPayment === 'upi') {
+        fieldsToValidate = [...fieldsToValidate, 'upiId'];
+    } else if (selectedPayment === 'netbanking') {
+        fieldsToValidate = [...fieldsToValidate, 'bankName'];
+    }
+
+    // Check if all required fields are filled
+    let isValid = true;
+    let firstInvalidField = null;
+    fieldsToValidate.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field && !field.value.trim()) {
+            isValid = false;
+            field.style.borderColor = '#e74c3c';
+
+            if (!firstInvalidField) {
+                firstInvalidField = field;
+            }
+        } else if (field) {
+            field.style.borderColor = '';
+        }
+    });
+
+    if (!isValid) {
+        showNotification('Please fill in all required fields', true);
+
+        // Scroll to the first invalid field
+        if (firstInvalidField) {
+            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstInvalidField.focus();
+        }
+        return; // Exit the function if form is invalid
+    }
+  
+    // Retrieve cart items from localStorage
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    const formattedItems = cartItems.map(item => ({
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+    })); // Extract name, price, and quantity
+  
+    // Calculate total price using ShoppingCart's getTotal method
+    //const total = cart.getTotal(); // Assuming getTotal() calculates total price
+    const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    
+    // Calculate GST (18% of subtotal)
+    const tax = subtotal * 0.18;
+    
+    // Get shipping cost
+    const shippingCostElement = document.getElementById('shipping-cost');
+    const shipping = parseFloat(shippingCostElement.textContent.replace('Rs ', ''));
+    
+    // Get discount if any
+    const discountElement = document.querySelector('.discount span:last-child');
+    const discount = parseFloat(discountElement.textContent.replace('-Rs ', '')) || 0;
+    
+    // Calculate final total including GST, shipping, and discount
+    const total = subtotal + tax + shipping - discount;
+    localStorage.setItem('totalPrice', total);
+    const addressStore = {
+        street: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        pinCode: document.getElementById('zipCode').value,
+        country: document.getElementById('country').value
+    };
+    localStorage.setItem('shippingAddress', JSON.stringify(addressStore));
+    // Check if cart is empty
+    // if (formattedItems.length === 0) {
+    //   alert('Your cart is empty!');
+    //   return;
+    // }
+  
+    console.log('Checkout Data:', { user_id: userId, items: formattedItems, total }); // Debugging log
+  
+    try {
+      // Send cart data to the backend
+      const response = await fetch('/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, items: formattedItems, total }),
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+        //alert(result.message);
+        //cart.clearCart(); // Clear cart after successful checkout
+        //window.location.href = '/profile.html'; // Redirect to profile page
+      } else {
+        alert(result.error || 'Failed to place order.');
+      }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+    }
+  });
